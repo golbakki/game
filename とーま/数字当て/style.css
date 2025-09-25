@@ -1,0 +1,104 @@
+body {display: grid; place-items: center;}
+
+.btn-common {
+    width: 150px;
+    height: 40px;
+    margin: 10px;
+
+    border: none;
+    border-radius: 15px;
+
+    background: #e0e0e0;
+    color: black;
+    font-size: 20px;
+    font-weight: bold;
+
+    box-shadow: 0 5px 0 #bbb; /* 下方向に濃い影をつけて立体感 */
+    cursor: pointer;
+    transition: 0.1s;
+}
+
+.btn-common:hover {
+    box-shadow: 0 6px 0 #999;
+}
+
+/* クリックしている間だけ下に沈む */
+.btn-common:active {
+    position: relative;
+    top: 4px;              /* 下に沈む */
+    box-shadow: 0 2px 0 #999; /* 影を短くして押し込まれた感じ */
+}
+
+/* 選択中ボタン */
+.gyoretsu.active {
+    background: #ff9900;       /* 選択中はオレンジ */
+    color: black;
+    box-shadow: 0 5px 0 #cc7700;
+    
+}
+
+#hideTime {
+    appearance: none;             /* デフォルトの矢印を消す（Chrome, Safari） */
+    
+    background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><polygon points='0,0 16,0 8,8' fill='black'/></svg>") no-repeat right 10px center;
+    background-size: 12px;        /* 矢印のサイズ */
+    
+    border: 2px solid #0072ff;    /* 枠線 */
+    border-radius: 8px;           /* 角丸 */
+    padding: 10px 40px 10px 12px; /* 右に余白を広めに（矢印用） */
+    
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    outline: none;
+    transition: 0.3s;
+    margin-right: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.g-group {
+    margin-bottom: 30px;
+}
+
+#hideTime:hover {
+    border-color: #00c6ff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+}
+
+#hideTime:focus {
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79,172,254,0.3);
+}
+
+.grid {
+    display: grid;
+    gap: 0;
+}
+.cell {
+    box-sizing: border-box;
+    outline: 2px solid black;
+    background: #fff;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 50px;
+    cursor: pointer;
+}
+
+#timer {
+    width: 300px;          /* 固定幅 */
+    height: 60px;          /* 固定高さ */
+    font-size: 36px;       /* 数字を大きく表示 */
+    font-weight: bold;
+    border: 3px solid #333; /* 枠線 */
+    background-color: #f0f0f0;
+    text-align: center;
+    line-height: 60px;     /* 高さと同じにして縦中央揃え */
+    border-radius: 8px;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+

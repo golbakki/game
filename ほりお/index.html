@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リハビリゲーム</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #e3f2fd;
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            width: 95%;
+            max-width: 800px;
+        }
+
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 0.5em;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1em;
+        }
+
+        .level-info, .correct-count {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #424242;
+        }
+
+        .timer {
+            font-size: 2em;
+            font-weight: bold;
+            color: #f44336;
+            margin-bottom: 1em;
+        }
+
+        .table-container {
+            margin: 1.5em 0;
+            padding: 1.5em;
+            background-color: #e8f5e9;
+            border-radius: 10px;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .table-container.hidden {
+            opacity: 0;
+            height: 0;
+            padding: 0;
+            margin: 0;
+            visibility: hidden;
+        }
+
+        .mapping-table {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            font-size: 2em;
+        }
+
+        .mapping-table div {
+            padding: 10px;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            background-color: #f1f8e9;
+            font-weight: bold;
+        }
+
+        .game-area {
+            margin-top: 2em;
+        }
+
+        .question {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 0.5em 0;
+            height: 1.5em;
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1em;
+            margin-top: 2em;
+        }
+
+        .answer-input {
+            font-size: 2.5em;
+            width: 80%;
+            padding: 0.5em;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+
+        #kana-keypad {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 800px;
+            margin-top: 1em;
+        }
+
+        .hiragana-keys {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .hiragana-keys .key {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 1em;
+            font-size: 1.5em;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+
+        .hiragana-keys .key:hover {
+            background-color: #45a049;
+        }
+
+        .action-buttons .delete-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 1em;
+            font-size: 1.5em;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            flex-grow: 1;
+        }
+
+        .action-buttons .delete-button:hover {
+            background-color: #d32f2f;
+        }
+
+        .action-buttons .submit-button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 1em;
+            font-size: 1.5em;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            flex-grow: 2;
+        }
+
+        .action-buttons .submit-button:hover {
+            background-color: #0d47a1;
+        }
+
+        .result {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 1em;
+            height: 2em;
+        }
+
+        .correct {
+            color: green;
+        }
+
+        .incorrect {
+            color: red;
+        }
+
+        .start-button {
+            font-size: 1.5em;
+            padding: 1em 2em;
+            margin-top: 2em;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .start-button:hover {
+            background-color: #0d47a1;
+        }
+
+        .game-complete-message {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-top: 1em;
+        }
+
+        .level4-button {
+            font-size: 1.5em;
+            padding: 1em 2em;
+            margin-top: 2em;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .level4-button:hover {
+            background-color: #e65100;
+        }
+
+        .retry-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1em;
+            margin-top: 2em;
+        }
+
+        .retry-button {
+            font-size: 1em;
+            padding: 0.8em 1.5em;
+            background-color: #607d8b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .retry-button:hover {
+            background-color: #455a64;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>絵文字ひらがなリハビリゲーム</h1>
+        <h2>表示される絵文字列の内容を対応表を見て読み解きましょう</h2>
+        <div class="top-section">
+            <div id="level-info" class="level-info">レベル: 1 </div>
+            <div id="correct-count" class="correct-count">スタートを押してください</div>
+        </div>
+        
+        <div id="timer" class="timer">時間: 00:00</div>
+
+        <div class="table-container">
+            <h2>対応表</h2>
+            <div id="mapping-table" class="mapping-table"></div>
+        </div>
+        
+        <div class="game-area">
+            <div id="question" class="question"></div>
+            
+            <div class="input-section">
+                <input type="text" id="answer-input" class="answer-input" placeholder="ひらがなをクリックしてください" readonly>
+                <div id="kana-keypad">
+                    <div id="hiragana-keys" class="hiragana-keys"></div>
+                    <div id="action-buttons" class="action-buttons"></div>
+                </div>
+            </div>
+
+            <div id="result" class="result"></div>
+            <button id="start-button" class="start-button">ゲームスタート</button>
+            <div id="game-complete-message" class="game-complete-message"></div>
+            
+            <div class="retry-buttons hidden">
+                <button id="retry-level1" class="retry-button">レベル1から再挑戦</button>
+                <button id="retry-level2" class="retry-button">レベル2から再挑戦</button>
+                <button id="retry-level3" class="retry-button">レベル3から再挑戦</button>
+            </div>
+            
+            <button id="level4-button" class="level4-button hidden">レベル4へ挑戦！</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ひらがなと絵文字のリストを定義
+            const hiraganaKeys = ['い', 'か', 'る', 'く', 'ま', 'し', 'さ'];
+            const emojis = ['🍊', '🍒', '🥝', '🍍', '🥭', '🍉', '🍋'];
+            
+            // ゲーム開始時に毎回新しく生成される対応表
+            let limitedMapping = {};
+            let reverseLimitedMapping = {};
+
+            // 固定された問題リスト
+            const fixedProblems = {
+                1: ['しか', 'くま', 'いか', 'さる', 'さい', 'いし'],
+                2: ['いるか', 'くるま', 'しかく', 'かかし', 'しるく'],
+                3: ['いかさま', 'かるいし', 'さいかい']
+            };
+
+            // レベル4の問題リスト (レベル1, 2, 3の単語をまとめる)
+            const allProblems = [
+                ...fixedProblems[1],
+                ...fixedProblems[2],
+                ...fixedProblems[3]
+            ];
+            
+            fixedProblems[4] = allProblems;
+
+            // DOM要素の取得
+            const mappingTableContainer = document.querySelector('.table-container');
+            const mappingTable = document.getElementById('mapping-table');
+            const questionEl = document.getElementById('question');
+            const answerInput = document.getElementById('answer-input');
+            const resultEl = document.getElementById('result');
+            const levelInfoEl = document.getElementById('level-info');
+            const correctCountEl = document.getElementById('correct-count');
+            const startButton = document.getElementById('start-button');
+            const timerEl = document.getElementById('timer');
+            const gameCompleteMessage = document.getElementById('game-complete-message');
+            const level4Button = document.getElementById('level4-button');
+            const retryButtonsContainer = document.querySelector('.retry-buttons');
+            const retryLevel1Button = document.getElementById('retry-level1');
+            const retryLevel2Button = document.getElementById('retry-level2');
+            const retryLevel3Button = document.getElementById('retry-level3');
+            const hiraganaKeysContainer = document.getElementById('hiragana-keys');
+            const actionButtonsContainer = document.getElementById('action-buttons');
+
+            let currentLevel = 1;
+            let problemIndex = 0;
+            let correctCount = 0;
+            let currentProblem = '';
+            let currentExpectedAnswer = '';
+
+            let timerId;
+            let startTime;
+            let isGameActive = false;
+
+            // 対応表をシャッフルして生成する関数
+            function createMappingTable() {
+                const shuffledEmojis = [...emojis];
+                for (let i = shuffledEmojis.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledEmojis[i], shuffledEmojis[j]] = [shuffledEmojis[j], shuffledEmojis[i]];
+                }
+                
+                limitedMapping = {};
+                reverseLimitedMapping = {};
+                hiraganaKeys.forEach((kana, index) => {
+                    limitedMapping[kana] = shuffledEmojis[index];
+                    reverseLimitedMapping[shuffledEmojis[index]] = kana;
+                });
+
+                // 対応表の表示
+                mappingTable.innerHTML = '';
+                for (const kana in limitedMapping) {
+                    const div = document.createElement('div');
+                    div.textContent = `${kana}: ${limitedMapping[kana]}`;
+                    mappingTable.appendChild(div);
+                }
+            }
+
+            // タイマーの開始
+            function startTimer() {
+                startTime = Date.now();
+                timerId = setInterval(updateTimer, 1000);
+            }
+
+            // タイマーの更新
+            function updateTimer() {
+                const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
+                const seconds = (elapsedTime % 60).toString().padStart(2, '0');
+                timerEl.textContent = `時間: ${minutes}:${seconds}`;
+            }
+
+            // タイマーの停止
+            function stopTimer() {
+                clearInterval(timerId);
+            }
+
+            // 正解数表示を更新する関数
+            function updateCorrectCountDisplay() {
+                let remaining;
+                if (currentLevel === 1) {
+                    remaining = fixedProblems[1].length - problemIndex;
+                    correctCountEl.textContent = `レベル2まであと${remaining}問`;
+                } else if (currentLevel === 2) {
+                    remaining = fixedProblems[2].length - problemIndex;
+                    correctCountEl.textContent = `レベル3まであと${remaining}問`;
+                } else if (currentLevel === 3) {
+                    remaining = fixedProblems[3].length - problemIndex;
+                    correctCountEl.textContent = `クリアまであと${remaining}問`;
+                } else if (currentLevel === 4) {
+                    remaining = fixedProblems[4].length - problemIndex;
+                    correctCountEl.textContent = `クリアまであと${remaining}問`;
+                }
+            }
+
+            // 対応表の表示/非表示を切り替える
+            function toggleMappingTable(show) {
+                if (show) {
+                    mappingTableContainer.classList.remove('hidden');
+                } else {
+                    mappingTableContainer.classList.add('hidden');
+                }
+            }
+
+            // 仮想キーパッドと解答ボタンの生成
+            function createKeypad() {
+                hiraganaKeysContainer.innerHTML = '';
+                actionButtonsContainer.innerHTML = '';
+                
+                hiraganaKeys.forEach(kana => {
+                    const button = document.createElement('button');
+                    button.className = 'key';
+                    button.textContent = kana;
+                    button.disabled = true;
+                    button.addEventListener('click', () => {
+                        if (isGameActive) {
+                            answerInput.value += kana;
+                        }
+                    });
+                    hiraganaKeysContainer.appendChild(button);
+                });
+                
+                // 削除ボタンを追加
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-button';
+                deleteButton.textContent = '削除';
+                deleteButton.disabled = true;
+                deleteButton.addEventListener('click', () => {
+                    if (isGameActive) {
+                        answerInput.value = answerInput.value.slice(0, -1);
+                    }
+                });
+                actionButtonsContainer.appendChild(deleteButton);
+
+                // 解答ボタンを追加
+                const submitBtn = document.createElement('button');
+                submitBtn.id = 'submit-button';
+                submitBtn.className = 'submit-button';
+                submitBtn.textContent = '解答する';
+                submitBtn.disabled = true;
+                submitBtn.addEventListener('click', () => {
+                    if (isGameActive) {
+                        checkAnswer();
+                    }
+                });
+                actionButtonsContainer.appendChild(submitBtn);
+            }
+
+            // 新しい問題の表示
+            function displayNextProblem() {
+                const levelProblems = fixedProblems[currentLevel];
+                if (problemIndex >= levelProblems.length) {
+                    // レベルクリア
+                    if (currentLevel < 3) {
+                        currentLevel++;
+                        problemIndex = 0;
+                        alert(`レベルアップ！\n次のレベル${currentLevel}に挑戦します。`);
+                    } else if (currentLevel === 3) {
+                        // レベル3をクリア
+                        stopTimer();
+                        isGameActive = false;
+                        gameCompleteMessage.textContent = 'おめでとうございます！レベル3をクリアしました！';
+                        level4Button.classList.remove('hidden');
+                        retryButtonsContainer.classList.remove('hidden');
+                        
+                        // キーパッドを無効化
+                        document.querySelectorAll('.key, .delete-button, .submit-button').forEach(btn => btn.disabled = true);
+                        return;
+                    } else if (currentLevel === 4) {
+                        // レベル4をクリア
+                        isGameActive = false;
+                        alert(`おめでとうございます！すべての問題をクリアしました！`);
+                        
+                        // キーパッドを無効化
+                        document.querySelectorAll('.key, .delete-button, .submit-button').forEach(btn => btn.disabled = true);
+                        level4Button.classList.remove('hidden');
+                        retryButtonsContainer.classList.remove('hidden');
+                        return;
+                    }
+                }
+
+                currentExpectedAnswer = fixedProblems[currentLevel][problemIndex];
+                currentProblem = '';
+                for (const char of currentExpectedAnswer) {
+                    currentProblem += limitedMapping[char];
+                }
+
+                questionEl.textContent = currentProblem;
+                answerInput.value = '';
+                resultEl.textContent = '';
+                levelInfoEl.textContent = `レベル: ${currentLevel}`;
+                updateCorrectCountDisplay();
+            }
+
+            // 解答のチェック
+            function checkAnswer() {
+                const userAnswer = answerInput.value.trim();
+                
+                if (userAnswer === currentExpectedAnswer) {
+                    resultEl.textContent = '正解！🎉';
+                    resultEl.className = 'result correct';
+                    correctCount++;
+                    problemIndex++;
+                } else {
+                    resultEl.textContent = '不正解…😢';
+                    resultEl.className = 'result incorrect';
+                    correctCount = 0;
+                }
+                
+                // 次の問題を少し遅れて表示
+                setTimeout(displayNextProblem, 1000);
+            }
+
+            // ゲームの開始
+            function startGame(level = 1) {
+                // 現在のゲームを強制終了
+                stopTimer();
+                isGameActive = false;
+                
+                startButton.classList.add('hidden');
+                level4Button.classList.add('hidden');
+                retryButtonsContainer.classList.add('hidden');
+                gameCompleteMessage.textContent = '';
+                
+                // ゲーム状態をリセット
+                currentLevel = level;
+                problemIndex = 0;
+                correctCount = 0;
+                
+                // キーパッドと解答ボタンを有効化
+                document.querySelectorAll('.key, .delete-button, .submit-button').forEach(btn => btn.disabled = false);
+
+                if (currentLevel < 4) {
+                    toggleMappingTable(true);
+                    startTimer();
+                } else {
+                    toggleMappingTable(false);
+                    timerEl.textContent = '時間: --:--';
+                }
+
+                answerInput.style.display = 'block';
+                document.getElementById('kana-keypad').style.display = 'flex';
+                resultEl.textContent = '';
+                
+                createMappingTable(); // ゲーム開始時に対応表を生成
+                displayNextProblem();
+                isGameActive = true;
+            }
+
+            // 初期化
+            createMappingTable();
+            createKeypad();
+            toggleMappingTable(false); // 初期状態では非表示
+            questionEl.textContent = '';
+            answerInput.style.display = 'none';
+            document.getElementById('kana-keypad').style.display = 'none';
+            resultEl.textContent = 'スタートボタンを押して開始！';
+            correctCountEl.textContent = 'スタートを押してください';
+
+            startButton.addEventListener('click', () => {
+                startGame();
+            });
+
+            level4Button.addEventListener('click', () => {
+                startGame(4);
+            });
+
+            retryLevel1Button.addEventListener('click', () => {
+                startGame(1);
+            });
+
+            retryLevel2Button.addEventListener('click', () => {
+                startGame(2);
+            });
+            
+            retryLevel3Button.addEventListener('click', () => {
+                startGame(3);
+            });
+        });
+    </script>
+</body>
+</html>

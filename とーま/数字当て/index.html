@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<script src="script.js" defer></script>
+<title>数字記憶ゲーム</title>
+
+</head>
+
+<body>
+<h3>数字記憶ゲーム</h3>
+<h3>遊び方</h3>
+<a href="#" id="showVideo">▶ 動画を見る</a>
+
+<!-- モーダル（最初は非表示） -->
+<div id="videoModal" style="
+  display:none; 
+  position:fixed; 
+  top:0; left:0; 
+  width:100%; height:100%; 
+  background:rgba(0,0,0,0.8); 
+  justify-content:center; 
+  align-items:center;
+  z-index:1000;
+">
+  <div style="position:relative; width:80%; max-width:1000px;">
+    <!-- 閉じるボタン -->
+    <button id="closeVideo" style="
+      position:absolute; 
+      top:-40px; 
+      right:0; 
+      background:#fff; 
+      border:none; 
+      padding:8px 12px; 
+      cursor:pointer; 
+      font-size:16px;
+      border-radius:5px;
+    ">✖ 閉じる</button>
+
+    <!-- 動画 -->
+    <video id="videoPlayer" width="100%" controls>
+      <source src="play.mp4" type="video/mp4">
+      お使いのブラウザは video タグに対応していません。
+    </video>
+  </div>
+</div>
+
+<script>
+const showBtn = document.getElementById("showVideo");
+const modal = document.getElementById("videoModal");
+const closeBtn = document.getElementById("closeVideo");
+const video = document.getElementById("videoPlayer");
+
+// 「動画を見る」を押したとき
+showBtn.addEventListener("click", function(e) {
+  e.preventDefault();
+  modal.style.display = "flex"; // モーダル表示
+  video.play(); // 自動再生したい場合
+});
+
+// 「閉じる」を押したとき
+closeBtn.addEventListener("click", function() {
+  video.pause(); // 停止
+  video.currentTime = 0; // 先頭に戻す
+  modal.style.display = "none"; // モーダル非表示
+});
+</script>
+
+
+
+<div class="g-group">
+  <button id="grid710" class="btn-common gyoretsu">7行10列</button>
+  <button id="grid57" class="btn-common gyoretsu">5行7列</button>
+  <button id="grid45" class="btn-common gyoretsu">4行5列</button>
+</div>
+
+<!-- 横並び用のラッパーを追加 -->
+  <select id="hideTime">
+    <option value="1000">1秒</option>
+    <option value="2000">2秒</option>
+    <option value="3000" selected>3秒</option>
+    <option value="4000">4秒</option>
+    <option value="5000">5秒</option>
+    <option value="6000">6秒</option>
+  </select><br>
+
+<div id="timer"></div><br><!-- 残りカウント表示 -->
+<div id="grid" class="grid"></div> 
+<button id="start" class="btn-common">スタート</button>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

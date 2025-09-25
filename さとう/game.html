@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            width: 75%;
+            display: flex;
+            margin-right: auto;
+            margin-left: auto;
+            flex-direction: column;
+        }
+
+        input[type="button"] {
+            margin: auto;
+            font-size: 32px;
+        }
+
+        select {
+            margin: auto;
+            font-size: 32px;
+        }
+
+        canvas {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        * {
+            font-family: "ＭＳ 明朝";
+        }
+    </style>
+</head>
+
+<body>
+    <input type="button" value="スタート" onclick="start()" id="button">
+    <br>
+    <select name="select" id="select">
+        <option value="hira">ひらがな</option>
+        <option value="alpha">アルファベット</option>
+    </select>
+    <h1 id="question"></h1>
+    <canvas id="canvas"></canvas>
+    <h1 id="progress">0個発見</h1>
+    <h1 id="record"></h1>
+</body>
+<script>
+    let mode;
+    const xLen = 20;
+    const yLen = 10;
+    var progress = 0;
+    var answerLen;
+    let charList;
+    var checkList = [];
+    var countList = {};
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let button, restart;
+    const qText = document.getElementById("question");
+    const progText = document.getElementById("progress");
+    var answerArray = [];
+    let width = window.innerWidth * 3 / 4;
+    let height = window.innerHeight * 3 / 4;
+    let size = Math.min(width, height);
+    let fontSize = size / xLen;
+    canvas.width = size;
+    canvas.height = size;
+    canvas.style.border = "1px solid";
+    ctx.font = size / xLen + "px'ＭＳ 明朝'";
+    ctx.textBaseline = "top";
+    let startTime;
+    let answerIndex;
+    let canClick = false;
+    function start() {
+        mode = document.getElementById("select").value
+        charList = (mode == "hira") ? "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        document.getElementById("button").remove();
+        document.getElementById("select").remove();
+        for (let i = 0; i < xLen * yLen; i++) {
+            var random = Math.floor(Math.random() * charList.length);
+            checkList.push(random);
+            if (random in countList) countList[random]++;
+            else countList[random] = 1;
+        }
+        if (true) {
+            var max = 0, maxindex = -1;
+            Object.keys(countList).forEach(function (key) {
+                if (max < countList[key]) {
+                    max = countList[key];
+                    maxindex = key;
+                }
+            });
+            answerIndex = maxindex;
+        }
+        else {
+            answerIndex = Math.floor(Math.random() * charList.length);
+            var answerIndex = maxindex;
+            while (!checkList.includes(answerIndex)) {
+                answerIndex = Math.floor(Math.random() * charList.length);
+            }
+        }
+        let rIndex = 0;
+        for (let y = 0; y < yLen; y++) {
+            for (let x = 0; x < xLen; x++) {
+                var index = checkList[rIndex];
+                var xPos = x * fontSize;
+                var yPos = y * size / (yLen - 0.5);
+                if (index == answerIndex) {
+                    answerArray.push([xPos, yPos]);
+                }
+                ctx.fillStyle = "black";
+                if (mode == "hira") ctx.fillText(charList[index], xPos, yPos);
+                else ctx.fillText(charList[index], xPos + fontSize / 4, yPos);
+                rIndex++;
+            }
+        }
+
+        qText.innerHTML = "「<b>" + charList[answerIndex] + "</b>」という文字を選んでクリックしてください。<br>全部見つけたら終了ボタンを押してください。";/*それは何個ありましたか?*/
+        answerLen = answerArray.length;
+        startTime = Date.now();
+        button = document.createElement("input");
+        button.type = "button";
+        button.value = "終了";
+        button.addEventListener('click', { answer: answerIndex, handleEvent: finish });
+        document.body.appendChild(button);
+        canClick = true;
+    }
+    function finish() {
+        if (canClick) {
+            document.getElementById("record").innerText = "かかった時間:" + Math.floor((Date.now() - startTime) / 1000) + "秒\n見落としの個数:" + (answerLen - progress) + "個";
+            answerArray.forEach(element => {
+                ctx.beginPath();
+                ctx.fillStyle = "rgba(255,255,0,0.5)";
+                ctx.arc(element[0] + fontSize / 2, element[1] + fontSize / 2, fontSize / 2, 0, 2 * Math.PI);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = "black";
+                if (mode == "hira") ctx.fillText(charList[this.answer], element[0], element[1]);
+                else ctx.fillText(charList[this.answer], element[0] + fontSize / 4, element[1]);
+            });
+            canClick = false;
+            button.value = "再挑戦";
+        }
+        else {
+            window.location.reload();
+        }
+    }
+    canvas.addEventListener("click", (e) => {
+        if (!canClick) return;
+        var x = e.offsetX;
+        var y = e.offsetY;
+        answerArray.forEach((element, index) => {
+            if (element[0] < x && x < element[0] + fontSize && element[1] < y && y < element[1] + fontSize) {
+                answerArray.splice(index, 1);
+                progress++;
+                ctx.beginPath();
+                ctx.strokeStyle = "#f00";
+                ctx.lineWidth = 4;
+                ctx.arc(element[0] + fontSize / 2, element[1] + fontSize / 2, fontSize / 2, 0, 2 * Math.PI);
+                ctx.stroke();
+                progText.innerText = progress + "個発見"
+            }
+        });
+    });
+</script>
+
+</html>

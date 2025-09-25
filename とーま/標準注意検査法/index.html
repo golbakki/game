@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>標準注意検査法（整列版）</title>
+<style>
+    body {
+        width: 75%;
+        display: flex;
+        flex-direction: column;
+        margin: auto;
+        font-family: "ＭＳ 明朝";
+        align-items: center;
+    }
+    input[type="button"], select {
+        font-size: 32px;
+        margin: 10px;
+    }
+    canvas {
+        margin: 20px 0;
+        border: 1px solid #000;
+    }
+    h1 {
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+<input type="button" value="スタート" id="button" onclick="start()">
+<select name="select" id="select">
+    <option value="hira">ひらがな</option>
+    <option value="alpha">アルファベット</option>
+    <option value="number">数字</option>
+    <option value="shape">図形</option>
+    <option value="記号">記号</option>
+</select>
+<h1 id="question"></h1>
+<canvas id="canvas"></canvas>
+<h1 id="progress">0個発見</h1>
+<h1 id="record"></h1>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const qText = document.getElementById("question");
+const progText = document.getElementById("progress");
+
+const xLen = 20; // 横の数
+const yLen = 10; // 縦の数
+let fontSize;
+let itemsOnCanvas = []; // 描画アイテム
+let answerArray = [];
+let progress = 0;
+let answerLen;
+let startTime;
+let canClick = false;
+let button;
+
+// Canvasサイズ
+let width = window.innerWidth*0.75;
+let height = window.innerHeight*0.75;
+let size = Math.min(width, height);
+canvas.width = size;
+canvas.height = size;
+fontSize = size / xLen;
+ctx.font = fontSize + "px 'ＭＳ 明朝'";
+ctx.textBaseline = "top";
+
+
+function start() {
+    const mode = document.getElementById("select").value;
+    let itemList;
+
+    if (mode === "hira") itemList = "あかさたなはまやらわ";
+    else if (mode === "alpha") itemList = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    else if (mode === "number") itemList = "0123456789";
+    else if (mode === "shape") itemList = ["◯","△","▽","☆","◇","◎"];
+    else if (mode === "記号") itemList = ["β","δ","γ","ε","λ","π","φ","ψ","ω"];
+
+    document.getElementById("button").remove();
+    document.getElementById("select").remove();
+
+    
+    // 初期化
+    itemsOnCanvas = [];
+    answerArray = [];
+    progress = 0;
+    let countList = {};
+
+    // 整列描画
+    for (let y=0; y<yLen; y++){
+        for (let x=0; x<xLen; x++){
+            let index = Math.floor(Math.random() * itemList.length);
+            let item = itemList[index];
+            let xPos = x * fontSize;
+            let yPos = y * size / yLen;
+            itemsOnCanvas.push({item, x:xPos, y:yPos});
+            ctx.fillStyle = "black";
+            //ctx.fillText(item, xPos + (mode==="alpha"?fontSize/4:0), yPos);
+            ctx.textAlign = "center";  // 中央揃え
+            ctx.textBaseline = "top";  // 上揃え
+            ctx.fillText(item, xPos + fontSize/2, yPos);
+
+
+            // 出現カウント
+            countList[index] = (countList[index] || 0) + 1;
+        }
+    }
+
+    // 正解を最も多く出現したものに設定
+    let max = 0, answerIndex;
+    Object.keys(countList).forEach(k=>{
+        if(countList[k]>max){ max = countList[k]; answerIndex = k; }
+    });
+
+    // 正解座標を保存
+    itemsOnCanvas.forEach(i=>{
+        if(i.item === itemList[answerIndex]) answerArray.push(i);
+    });
+
+    qText.innerHTML = `「<b>${itemList[answerIndex]}</b>」をクリックしてください。<br>全部見つけたら終了ボタンを押してください。`;
+    answerLen = answerArray.length;
+    startTime = Date.now();
+
+    button = document.createElement("input");
+    button.type="button";
+    button.value="終了";
+    button.addEventListener('click', finish);
+    document.body.appendChild(button);
+
+    canClick = true;
+}
+
+// クリック処理
+canvas.addEventListener("click", (e)=>{
+    if(!canClick) return;
+    const x = e.offsetX;
+    const y = e.offsetY;
+    answerArray.forEach((el, idx)=>{
+        if(x > el.x && x < el.x + fontSize && y > el.y && y < el.y + fontSize){
+            answerArray.splice(idx,1);
+            progress++;
+            ctx.beginPath();
+            ctx.strokeStyle="#f00";
+            ctx.lineWidth=4;
+            ctx.arc(el.x+fontSize/2, el.y+fontSize/2, fontSize/2,0,Math.PI*2);
+            ctx.stroke();
+            progText.innerText = `${progress}個発見`;
+        }
+    });
+});
+
+// 終了処理
+function finish(){
+    if(!canClick){
+        location.reload();
+        return;
+    }
+    canClick=false;
+    answerArray.forEach(el=>{
+        ctx.beginPath();
+        ctx.fillStyle="rgba(255,255,0,0.5)";
+        ctx.arc(el.x+fontSize/2, el.y+fontSize/2, fontSize/2,0,Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle="black";
+        //ctx.fillText(el.item, el.x, el.y);
+        ctx.fillText(el.item, el.x + fontSize/2, el.y);
+    });
+    const timeSec = Math.floor((Date.now()-startTime)/1000);
+    document.getElementById("record").innerText = `かかった時間: ${timeSec}秒\n見落とし: ${answerArray.length}個`;
+    button.value="再挑戦";
+}
+</script>
+</body>
+</html>
